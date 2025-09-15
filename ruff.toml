@@ -5,7 +5,7 @@ indent-width = 4
 [lint]
 select = [
     "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings  
+    "W",    # pycodestyle warnings
     "F",    # pyflakes
     "I",    # isort
     "UP",   # pyupgrade

@@ -110,7 +110,7 @@ class ProductStatusEnum(str, Enum):
 
 class SupabaseBaseModel(BaseModel):
     """Base model with supabase-py integration helpers."""
-    
+
     ...
     # All helper logic is automatically generated
     # Main methods: load() for parsing responses, dump() for preparing data
@@ -204,7 +204,7 @@ class Category(SupabaseBaseModel):
 | `CHECK (x ~* '^.+@.+$')`           | `Field(pattern=r"^.+@.+$")`                    |
 
 
-> [!NOTE]  
+> [!NOTE]
 > Constraint parsing is continuously improving. Please open an issue with examples of constraints you'd like to see supported!
 
 ## CLI Reference
@@ -252,8 +252,17 @@ uv sync
 uv run ruff format .
 uv run ruff check .
 
+# Type checking
+uv run mypy .
+
 # Run tests
 uv run pytest
+
+# Set up pre-commit hooks (recommended)
+uv run pre-commit install
+
+# Run all pre-commit hooks manually
+uv run pre-commit run --all-files
 ```
 
 ## Contributing

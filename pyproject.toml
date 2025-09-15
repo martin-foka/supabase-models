@@ -1,6 +1,6 @@
 [project]
 name = "supabase-models"
-version = "0.0.2"
+version = "0.0.3.dev1"
 description = "Generate type-safe Pydantic models that simplify working with supabase-py"
 authors = [{ name = "martin-foka" }]
 readme = "README.md"
@@ -34,6 +34,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy>=1.17.0",
+    "pre-commit>=4.0.0",
     "pytest>=7.0.0",
     "pytest-mock>=3.10.0",
     "ruff>=0.1.0",
@@ -53,4 +54,3 @@ Issues = "https://github.com/martin-foka/supabase-models/issues"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
