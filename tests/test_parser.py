@@ -125,7 +125,6 @@ class TestConstraintParser:
         constraints = parser.extract_constraints(column)
         assert constraints is None
 
-
     def test_extract_type_constraints_string_length(self, parser):
         """Type constraint extraction for string length."""
         column = Column("test", String(100), nullable=False)
@@ -154,7 +153,7 @@ class TestConstraintParser:
             ("CHECK ((char_length(name) <= 12))", "max_length", 12),
             ("CHECK ((length(name) >= 3))", "min_value", 3.0),
             ("CHECK ((price >= 6))", "min_value", 6.0),
-            ("CHECK ((price <= 10))", "max_value", 10.0)
+            ("CHECK ((price <= 10))", "max_value", 10.0),
         ],
     )
     def test_parse_constraint_text_variants(self, parser, constraint_text, attr, expected_value):
@@ -198,8 +197,8 @@ class TestConstraintParser:
         constraints = ConstraintInfo(min_length=5, max_length=100, pattern="^[a-zA-Z]+$")
         params = parser.generate_constraint_params(constraints, "str")
 
-        expected_parts = {'min_length=5', 'max_length=100', 'pattern=r"^[a-zA-Z]+$"'}
-        assert set(params.split(', ')) == expected_parts
+        expected_parts = {"min_length=5", "max_length=100", 'pattern=r"^[a-zA-Z]+$"'}
+        assert set(params.split(", ")) == expected_parts
 
     def test_generate_constraint_params_numeric_constraints(self, parser):
         """Constraint parameter generation for numeric constraints."""
@@ -225,7 +224,6 @@ class TestConstraintParser:
         result = parser.get_column_description(posts_table.c.user_id)
         assert result == "Foreign key to 'users'"
 
-
     def test_get_column_description_with_inline_unique(self, parser):
         """Column description includes inline unique constraint information."""
         column = Column("title", String(100), unique=True, autoincrement=False)
@@ -236,10 +234,11 @@ class TestConstraintParser:
     def test_get_column_description_with_table_level_unique(self, parser):
         """Column description includes table-level unique constraint information."""
         from sqlalchemy import UniqueConstraint
+
         metadata = MetaData()
-        table = Table("articles", metadata,
-                     Column("title", String(100), autoincrement=False),
-                     UniqueConstraint("title"))
+        table = Table(
+            "articles", metadata, Column("title", String(100), autoincrement=False), UniqueConstraint("title")
+        )
 
         result = parser.get_column_description(table.c.title)
         assert result == "Unique"

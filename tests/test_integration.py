@@ -38,7 +38,7 @@ class TestIntegration:
                 database_url="postgresql://test:test@localhost:5432/test", output_file=str(output_file)
             )
 
-            with patch.object(generator, 'reflect_database_schema', return_value=metadata):
+            with patch.object(generator, "reflect_database_schema", return_value=metadata):
                 generator.run()
 
             assert output_file.exists()

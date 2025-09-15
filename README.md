@@ -1,16 +1,18 @@
 # supabase-models
 
-Generate type-safe Pydantic models from your Supabase database schema that simplify working with [supabase-py](https://github.com/supabase/supabase-py).
+Generate type-safe Pydantic models from your Supabase database schema ready to use with [supabase-py](https://github.com/supabase/supabase-py).
 
-## Overview
-
-**Rapid development without complex hustle.** This tool introspects your database schema and generates Python models with constraint validation.  
-The tool uses a built-in Jinja2 template that you can customize to your needs. Generated models follow our ruff style guidelines for consistent formatting.
+## Key features
+- **Schema introspection**: Automatically extracts table structures, constraints, and relationships
+- **Type-safe models**: Creates Pydantic models with type hints and validation
+- **JSON serialization**: Generated models include `dump()` and `load()` methods for sending/receiving data via supabase-py
+- **Constraint validation**: Translates database column constraints to Pydantic validators
+- **Customizable output**: Uses a built-in template by default, or modify the Jinja2 template to match your needs
 
 ## Prerequisites
 
 This package is designed to work with:
-- [supabase-py](https://github.com/supabase/supabase-py) - The official Supabase Python client
+- [supabase-py](https://github.com/supabase/supabase-py) - the recommended Supabase Python client
 - PostgreSQL databases (including Supabase projects)
 
 ## Installation
@@ -46,7 +48,7 @@ The generated models provide `dump()` and `load()` methods to simplify working w
 
 ```python
 from supabase import create_client, Client
-from models import Product, ProductStatusEnum  # Your generated models
+from models import Product, ProductStatusEnum  # Noqa # Your generated models
 
 # Initialize Supabase client
 supabase_client: Client = ... # Noqa
@@ -225,7 +227,7 @@ Options:
 
 ```bash
 # Basic usage with environment variable
-export DATABASE_URL="postgresql://postgres:password@db.project.supabase.co:5432/postgres"
+export DATABASE_URL="postgresql://user:pass@host:port/db"
 supabase-models
 
 # Direct database URL
