@@ -18,11 +18,7 @@ from supabase_models.generator import ModelGenerator
 def setup_logging(verbose: bool = False) -> None:
     """Configure logging for the CLI."""
     level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(levelname)s: %(message)s",
-        stream=sys.stderr
-    )
+    logging.basicConfig(level=level, format="%(levelname)s: %(message)s", stream=sys.stderr)
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -48,39 +44,27 @@ Examples:
         """,
     )
 
-    parser.add_argument(
-        "--database-url",
-        help="PostgreSQL database URL (overrides DATABASE_URL env var)"
-    )
+    parser.add_argument("--database-url", help="PostgreSQL database URL (overrides DATABASE_URL env var)")
 
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=DEFAULT_OUTPUT_FILE,
         help=f"Output file for generated models (default: {DEFAULT_OUTPUT_FILE})",
     )
 
     parser.add_argument(
-        "-s", "--schema",
+        "-s",
+        "--schema",
         default=DEFAULT_SCHEMA,
         help=f"Database schema to introspect (default: {DEFAULT_SCHEMA})",
     )
 
-    parser.add_argument(
-        "-t", "--template",
-        help="Custom template file path (default: built-in template.jinja2)"
-    )
+    parser.add_argument("-t", "--template", help="Custom template file path (default: built-in template.jinja2)")
 
-    parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
 
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"supabase-models {version('supabase-models')}"
-    )
+    parser.add_argument("--version", action="version", version=f"supabase-models {version('supabase-models')}")
 
     return parser
 

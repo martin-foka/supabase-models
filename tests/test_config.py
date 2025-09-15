@@ -23,11 +23,7 @@ class TestConfigurationConstants:
         assert config.DEFAULT_TIMEOUT > 0
 
         # String values should be non-empty and clean
-        string_constants = [
-            config.DEFAULT_OUTPUT_FILE,
-            config.DEFAULT_TEMPLATE_NAME,
-            config.DEFAULT_SCHEMA
-        ]
+        string_constants = [config.DEFAULT_OUTPUT_FILE, config.DEFAULT_TEMPLATE_NAME, config.DEFAULT_SCHEMA]
 
         for constant in string_constants:
             assert constant  # Not empty

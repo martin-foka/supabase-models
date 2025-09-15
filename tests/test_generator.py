@@ -68,7 +68,9 @@ class TestModelGenerator:
         database_url = "postgresql://user:password@localhost:5432/testdb"
         generator = ModelGenerator(database_url=database_url)
 
-        fields = [FieldInfo(name="status", type="Literal['active', 'inactive']", is_required=True, is_primary_key=False)]
+        fields = [
+            FieldInfo(name="status", type="Literal['active', 'inactive']", is_required=True, is_primary_key=False)
+        ]
         table_model = TableModel(class_name="Test", table_name="test", fields=fields)
 
         used_types = generator._collect_used_types([table_model])
@@ -101,8 +103,16 @@ class TestModelGenerator:
         priority_constraints = ConstraintInfo(enum_values=["low", "high"])
 
         fields = [
-            FieldInfo(name="status", type="StatusEnum", constraints=status_constraints, is_required=True, is_primary_key=False),
-            FieldInfo(name="priority", type="PriorityEnum", constraints=priority_constraints, is_required=True, is_primary_key=False),
+            FieldInfo(
+                name="status", type="StatusEnum", constraints=status_constraints, is_required=True, is_primary_key=False
+            ),
+            FieldInfo(
+                name="priority",
+                type="PriorityEnum",
+                constraints=priority_constraints,
+                is_required=True,
+                is_primary_key=False,
+            ),
             FieldInfo(name="name", type="str", is_required=True, is_primary_key=False),
         ]
 
@@ -162,7 +172,7 @@ class TestModelGenerator:
         generator = ModelGenerator(database_url=database_url)
 
         with (
-            patch('supabase_models.generator.create_engine', side_effect=Exception("Connection refused")),
+            patch("supabase_models.generator.create_engine", side_effect=Exception("Connection refused")),
             pytest.raises(RuntimeError, match="Failed to connect to database"),
         ):
             generator.get_engine()
@@ -173,41 +183,41 @@ class TestModelGenerator:
         generator = ModelGenerator(database_url=database_url)
 
         # Pre-set engine to avoid database connection
-        generator.engine = Mock()
+        generator.db_engine = Mock()
 
-        with patch('supabase_models.generator.MetaData') as MockMetaData:
+        with patch("supabase_models.generator.MetaData") as MockMetaData:
             mock_metadata = MockMetaData.return_value
 
             result = generator.reflect_database_schema()
 
             assert result == mock_metadata
             MockMetaData.assert_called_once()  # Verify MetaData() constructor called
-            mock_metadata.reflect.assert_called_once_with(bind=generator.engine, schema=None)
+            mock_metadata.reflect.assert_called_once_with(bind=generator.db_engine, schema=None)
 
     def test_reflect_database_schema_custom_schema(self):
         """Database schema reflection with custom schema."""
         database_url = "postgresql://user:password@localhost:5432/testdb"
         generator = ModelGenerator(database_url=database_url, schema="custom_schema")
 
-        generator.engine = Mock()
+        generator.db_engine = Mock()
 
-        with patch('supabase_models.generator.MetaData') as MockMetaData:
+        with patch("supabase_models.generator.MetaData") as MockMetaData:
             mock_metadata = MockMetaData.return_value
 
             result = generator.reflect_database_schema()
 
             assert result == mock_metadata
             MockMetaData.assert_called_once()
-            mock_metadata.reflect.assert_called_once_with(bind=generator.engine, schema="custom_schema")
+            mock_metadata.reflect.assert_called_once_with(bind=generator.db_engine, schema="custom_schema")
 
     def test_reflect_database_schema_reflection_failure(self):
         """Database schema reflection with reflection failure."""
         database_url = "postgresql://user:password@localhost:5432/testdb"
         generator = ModelGenerator(database_url=database_url, schema="invalid_schema")
 
-        generator.engine = Mock()
+        generator.db_engine = Mock()
 
-        with patch('supabase_models.generator.MetaData') as MockMetaData:
+        with patch("supabase_models.generator.MetaData") as MockMetaData:
             MockMetaData.return_value.reflect.side_effect = Exception("schema does not exist")
 
             with pytest.raises(RuntimeError, match="Failed to reflect schema 'invalid_schema'"):
@@ -230,8 +240,8 @@ class TestModelGenerator:
 
         # Pre-set engine to test caching behavior
         mock_engine = Mock()
-        generator.engine = mock_engine
+        generator.db_engine = mock_engine
 
         result = generator.get_engine()
         assert result is mock_engine
-        assert generator.engine is mock_engine
+        assert generator.db_engine is mock_engine

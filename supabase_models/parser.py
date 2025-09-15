@@ -20,7 +20,7 @@ class ConstraintParser:
 
     def get_column_description(self, column: Column) -> str | None:
         """Generate description with type info, default values and constraints."""
-        description_parts = []
+        description_parts: list[str] = []
 
         # Add constraint information
         # if column.primary_key:
@@ -29,7 +29,7 @@ class ConstraintParser:
             # Get foreign key table reference
             try:
                 fk = next(iter(column.foreign_keys))
-                fk_table = fk.column.table.name
+                fk_table: str = fk.column.table.name
                 description_parts.append(f"Foreign key to '{fk_table}'")
             except (StopIteration, AttributeError) as e:
                 self.logger.warning(f"Could not resolve foreign key for column '{column.name}': {e}")
@@ -44,7 +44,7 @@ class ConstraintParser:
             description_parts.append("Auto-increment")
 
         # Add default value information
-        default_value = self.get_default_value(column)
+        default_value: str | None = self.get_default_value(column)
         if default_value:
             description_parts.append(f"Default: {default_value}")
 
@@ -58,30 +58,31 @@ class ConstraintParser:
                 raise AttributeError("No python_type available")
         except (NotImplementedError, AttributeError):
             # Handle types without python_type mapping - this is not supposed to happen usually
-            self.logger.warning(f"Unknown type '{column.type}' for column '{column.name}' in table '{table_name}', using Any")
+            self.logger.warning(
+                f"Unknown type '{column.type}' for column '{column.name}' in table '{table_name}', using Any"
+            )
             return "Any"
 
         # Check if this is an enum field and return custom enum type
         if hasattr(column.type, "enums") and column.type.enums:
-            enum_type_name = getattr(column.type, 'name', None)
+            enum_type_name: str | None = getattr(column.type, "name", None)
             if enum_type_name:
                 # Convert enum type name like 'user_status' to 'UserStatusEnum'
-                enum_class_name = ''.join(word.capitalize() for word in enum_type_name.split('_')) + 'Enum'
+                enum_class_name: str = "".join(word.capitalize() for word in enum_type_name.split("_")) + "Enum"
             else:
                 # Fallback to column name if no type name available
                 enum_class_name = f"{column.name.title().replace('_', '')}Enum"
             return enum_class_name
 
-        python_type_name = column.type.python_type.__name__
+        python_type_name: str = column.type.python_type.__name__
 
         # Handle DECIMAL/NUMERIC fields - accept both Decimal and float for convenience
         if python_type_name == "Decimal":
             return "Decimal | float"
 
         # Handle TIMETZ fields - use time | str to accept both Python time objects and timezone strings
-        if python_type_name == "time" and hasattr(column.type, 'timezone') and column.type.timezone:
+        if python_type_name == "time" and hasattr(column.type, "timezone") and column.type.timezone:
             return "time | str"
-
 
         # Use proper type annotations for generic types
         if python_type_name == "dict":
@@ -103,21 +104,21 @@ class ConstraintParser:
             return None
 
         # PostgreSQL Identity columns
-        if hasattr(server_default, 'start') and hasattr(server_default, 'increment'):
-            result = f"Identity(start={server_default.start}, increment={server_default.increment})"
+        if hasattr(server_default, "start") and hasattr(server_default, "increment"):
+            result: str = f"Identity(start={server_default.start}, increment={server_default.increment})"
         else:
             # Sequences, literals, and functions
             result = str(server_default.arg if hasattr(server_default, "arg") else server_default)
 
         # Clean up: '2000'::numeric -> 2000, nextval('seq')::regclass -> nextval('seq')
-        result = re.sub(r'::\w+\b', '', result)
+        result = re.sub(r"::\w+\b", "", result)
 
         return result
 
     def extract_constraints(self, column: Column) -> ConstraintInfo | None:
         """Extract constraint information from SQLAlchemy column."""
-        constraints = ConstraintInfo()
-        has_constraints = False
+        constraints: ConstraintInfo = ConstraintInfo()
+        has_constraints: bool = False
 
         # Extract column type constraints (length, enums, precision)
         if self._extract_type_constraints(column, constraints):
@@ -132,7 +133,7 @@ class ConstraintParser:
 
     def _extract_type_constraints(self, column: Column, constraints: ConstraintInfo) -> bool:
         """Extract constraints from column type definition."""
-        found = False
+        found: bool = False
 
         # Get column length limit (e.g., VARCHAR(100) -> max_length=100)
         if hasattr(column.type, "length") and column.type.length is not None:
@@ -147,10 +148,10 @@ class ConstraintParser:
         # Get numeric precision bounds (e.g., NUMERIC(10,2) -> range limits)
         if hasattr(column.type, "precision") and hasattr(column.type, "scale"):
             if column.type.precision and column.type.scale is not None:
-                max_digits = column.type.precision - column.type.scale
+                max_digits: int = column.type.precision - column.type.scale
                 if max_digits > 0:
-                    constraints.max_value = 10 ** max_digits - 1
-                    constraints.min_value = -(10 ** max_digits - 1)
+                    constraints.max_value = 10**max_digits - 1
+                    constraints.min_value = -(10**max_digits - 1)
                     found = True
 
         return found
@@ -158,9 +159,9 @@ class ConstraintParser:
     def _extract_check_constraints(self, column: Column, engine: Engine, constraints: ConstraintInfo) -> bool:
         """Extract check constraints from database using PostgreSQL's built-in formatter."""
         try:
-            table_name = column.table.name
-            schema_name = column.table.schema or "public"
-            column_name = column.name
+            table_name: str = column.table.name
+            schema_name: str = column.table.schema or "public"
+            column_name: str = column.name
 
             # Query PostgreSQL system catalogs for check constraints
             # Uses pg_get_constraintdef() which formats constraints cleanly
@@ -182,9 +183,9 @@ class ConstraintParser:
                     query, {"table_name": table_name, "schema_name": schema_name, "column_name": column_name}
                 )
 
-                found = False
+                found: bool = False
                 for row in result:
-                    constraint_def = row.constraint_def
+                    constraint_def: str = row.constraint_def
                     self.logger.debug(f"Found constraint for {column_name}: '{constraint_def}'")
 
                     if self._parse_constraint_text(constraint_def, constraints):
@@ -203,31 +204,31 @@ class ConstraintParser:
 
     def _parse_constraint_text(self, constraint_text: str, constraints: ConstraintInfo) -> bool:
         """Parse constraint text using simple string operations."""
-        found = False
+        found: bool = False
 
         # Handle char_length() constraints for string length limits
         if "char_length(" in constraint_text:
             # Use simpler regex that handles nested parentheses
             # Look for char_length(anything) >= number
-            char_length_ge = re.search(r'char_length\(.*?\)\s*>=\s*([+-]?\d+(?:\.\d+)?)', constraint_text)
+            char_length_ge = re.search(r"char_length\(.*?\)\s*>=\s*([+-]?\d+(?:\.\d+)?)", constraint_text)
             if char_length_ge:
                 constraints.min_length = int(float(char_length_ge.group(1)))
                 found = True
 
             # Look for char_length(anything) <= number
-            char_length_le = re.search(r'char_length\(.*?\)\s*<=\s*([+-]?\d+(?:\.\d+)?)', constraint_text)
+            char_length_le = re.search(r"char_length\(.*?\)\s*<=\s*([+-]?\d+(?:\.\d+)?)", constraint_text)
             if char_length_le:
                 constraints.max_length = int(float(char_length_le.group(1)))
                 found = True
 
             # Look for char_length(anything) > number (exclusive)
-            char_length_gt = re.search(r'char_length\(.*?\)\s*>\s*([+-]?\d+(?:\.\d+)?)', constraint_text)
+            char_length_gt = re.search(r"char_length\(.*?\)\s*>\s*([+-]?\d+(?:\.\d+)?)", constraint_text)
             if char_length_gt:
                 constraints.min_length = int(float(char_length_gt.group(1))) + 1
                 found = True
 
             # Look for char_length(anything) < number (exclusive)
-            char_length_lt = re.search(r'char_length\(.*?\)\s*<\s*([+-]?\d+(?:\.\d+)?)', constraint_text)
+            char_length_lt = re.search(r"char_length\(.*?\)\s*<\s*([+-]?\d+(?:\.\d+)?)", constraint_text)
             if char_length_lt:
                 constraints.max_length = int(float(char_length_lt.group(1))) - 1
                 found = True
@@ -239,9 +240,9 @@ class ConstraintParser:
         # Handle numeric range constraints (for field >= value, field > value, etc.)
         # Look for inclusive minimum bounds (field >= number)
         if ">=" in constraint_text:
-            parts = constraint_text.split(">=")
+            parts: list[str] = constraint_text.split(">=")
             for part in parts[1:]:  # Skip first part (before >=)
-                numbers = re.findall(r"([+-]?\d+(?:\.\d+)?)", part)
+                numbers: list[str] = re.findall(r"([+-]?\d+(?:\.\d+)?)", part)
                 if numbers:
                     constraints.min_value = float(numbers[0])
                     found = True
@@ -253,7 +254,7 @@ class ConstraintParser:
             for part in parts[1:]:  # Skip first part (before >)
                 numbers = re.findall(r"([+-]?\d+(?:\.\d+)?)", part)
                 if numbers:
-                    value = float(numbers[0])
+                    value: float = float(numbers[0])
                     constraints.min_value = value
                     constraints.min_value_exclusive = True
                     found = True
@@ -287,12 +288,12 @@ class ConstraintParser:
         if "~" in constraint_text:
             # Extract text between single quotes after ~ or ~*
             if "'" in constraint_text:
-                start = constraint_text.find("'")
-                end = constraint_text.find("'", start + 1)
+                start: int = constraint_text.find("'")
+                end: int = constraint_text.find("'", start + 1)
                 if start != -1 and end != -1:
-                    pattern = constraint_text[start + 1: end]
+                    pattern: str = constraint_text[start + 1 : end]
                     # Remove PostgreSQL type casting like ::text
-                    pattern = re.sub(r'::[a-zA-Z_]+\b', '', pattern).strip()
+                    pattern = re.sub(r"::[a-zA-Z_]+\b", "", pattern).strip()
                     if pattern:  # Only set if not empty after cleaning
                         constraints.pattern = pattern
                         found = True
@@ -306,12 +307,13 @@ class ConstraintParser:
             return True
 
         # Check table-level unique constraints
-        if hasattr(column, 'table') and column.table is not None:
+        if hasattr(column, "table") and column.table is not None:
             from sqlalchemy.schema import UniqueConstraint
+
             for constraint in column.table.constraints:
                 if isinstance(constraint, UniqueConstraint):
                     # Check if this column name is in the unique constraint
-                    column_names = [col.name for col in constraint.columns]
+                    column_names: list[str] = [col.name for col in constraint.columns]
                     if column.name in column_names:
                         return True
 
@@ -322,7 +324,7 @@ class ConstraintParser:
         if not constraints:
             return ""
 
-        params = []
+        params: list[str] = []
 
         # For enum fields, skip length constraints since Literal types already restrict values
         if not constraints.enum_values:
@@ -360,16 +362,16 @@ class ConstraintParser:
 
         try:
             fk = next(iter(column.foreign_keys))
-            foreign_table = fk.column.table.name
-            foreign_key_field = column.name
+            foreign_table: str = fk.column.table.name
+            foreign_key_field: str = column.name
 
             # Convert table name to class name
-            related_model_class = foreign_table.replace('_', ' ').title().replace(' ', '')
+            related_model_class: str = foreign_table.replace("_", " ").title().replace(" ", "")
 
             return RelationshipInfo(
                 foreign_table=foreign_table,
                 foreign_key_field=foreign_key_field,
-                related_model_class=related_model_class
+                related_model_class=related_model_class,
             )
         except (StopIteration, AttributeError) as e:
             self.logger.warning(f"Could not extract relationship info for column '{column.name}': {e}")
