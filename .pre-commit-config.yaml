@@ -1,0 +1,43 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+#      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-ast
+      - id: name-tests-test
+        args: ['--pytest-test-first']
+      - id: check-added-large-files
+        args: [ '--maxkb=1024' ]
+
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: Check formatting with ruff
+        entry: uv run ruff format --check
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: ruff-lint
+        name: Lint with ruff
+        entry: uv run ruff check
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: mypy
+        name: Type check with mypy
+        entry: uv run mypy .
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: pytest
+        name: Run tests with pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        always_run: true
