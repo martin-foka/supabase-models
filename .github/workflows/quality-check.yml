@@ -1,9 +1,7 @@
 name: Quality Check
 
 on:
-  pull_request:
-    branches:
-      - master
+  push:
   workflow_dispatch:
 
 jobs:
