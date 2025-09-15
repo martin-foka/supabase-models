@@ -1,0 +1,146 @@
+import base64
+from collections.abc import Callable
+from datetime import date
+from datetime import datetime
+from datetime import time
+from decimal import Decimal
+{% if enums %}from enum import Enum{{ n }}{% endif %}
+from typing import Any
+from typing import ClassVar
+from uuid import UUID
+
+from pydantic import BaseModel
+from pydantic import Field
+from pydantic import field_serializer
+from pydantic import model_validator
+
+
+class SupabaseBaseModel(BaseModel):
+    """Base model with data loading and serialization helpers."""
+    # Type serialization mapping for efficiency
+    _SERIALIZERS: dict[type, Callable[[Any], str]] = {
+        datetime: lambda v: v.isoformat(),
+        date: lambda v: v.isoformat(),
+        time: lambda v: v.isoformat(),
+        Decimal: lambda v: str(v),
+        UUID: lambda v: str(v),
+        bytes: lambda v: base64.b64encode(v).decode("utf-8"),
+    }
+
+    @field_serializer("*", when_used="always")
+    def serialize_fields(self, value: Any) -> Any:
+        """Serialize special types to JSON-compatible formats."""
+        serializer = self._SERIALIZERS.get(type(value))
+        if serializer:
+            return serializer(value)
+        return value
+
+    @model_validator(mode='after')
+    def validate_required_columns(self):
+        """Validate required columns are not None."""
+        if hasattr(self.__class__, '_required_columns'):
+            missing = [f for f in self._required_columns if getattr(self, f) is None]
+            if missing:
+                raise ValueError(f"Required columns cannot be None: {missing}")
+        return self
+
+    def dump(self) -> dict[str, Any]:
+        """Convert model to dict excluding unset fields.
+
+        Examples:
+            >>> # Insert a new product into Supabase
+            >>> supabase_client: Client = ... # noqa
+            >>> product = Product(name="Test", price=10.99)
+            >>> product_data = product.dump()
+            >>> supabase_client.table(Product.table_name).insert(product_data).execute()
+        """
+        # Only include explicitly set fields
+        field_names = list(self.model_fields.keys())
+        exclude_set = {f for f in field_names if f not in self.__pydantic_fields_set__}
+        return self.model_dump(exclude=exclude_set if exclude_set else None)
+        #return self.model_dump(exclude_unset=True)
+
+    def __iter__(self) -> Any:
+        """Enable dict(model) conversion with validation - calls dump() internally."""
+        return iter(self.dump().items())
+
+    @classmethod
+    def load(cls, response_or_data: Any) -> Any:
+        """Load Supabase response data into model instances.
+
+        Examples:
+            >>> # Load products from Supabase response
+            >>> supabase_client: Client = ... # noqa
+            >>> response = supabase_client.table(Product.table_name).select().execute()
+            >>> products: list[Product] = Product.load(response)
+        """
+        # Extract data from Supabase response
+        data = getattr(response_or_data, 'data', response_or_data)
+        if isinstance(data, list):
+            return [cls(**record) for record in data]
+        return cls(**data)
+
+    def __str__(self) -> str:
+        """String representation showing all fields."""
+        return repr(self)
+
+
+{% for enum_name, enum_values in enums.items() %}
+class {{ enum_name }}(str, Enum):
+{% for value in enum_values %}
+    {{ value.upper() }} = "{{ value }}"
+{% endfor %}
+
+
+{% endfor %}
+{% for model in models %}
+class {{ model.class_name }}(SupabaseBaseModel):
+    """Model for '{{ model.table_name }}' table.
+
+    Attributes:
+{%  for field in model.fields %}
+        {{ field.name }} ({{ field.type }} | None): {% if field.is_primary_key %}Primary key column{% elif field.is_required %}Required column{% else %}Optional column{% endif %}{% if field.description %}; {{ field.description }}{% endif %}.
+{%  endfor %}
+{%  if model.relationships %}
+{%    for rel in model.relationships %}
+        {{ rel.foreign_table }} ({{ rel.related_model_class }} | None): Related table {{ rel.related_model_class }} (requires {{ rel.foreign_table }}(*) in query)
+{%    endfor %}
+{%  endif %}
+    """
+    table_name: ClassVar[str] = "{{ model.table_name }}"
+{%  if model.fields | selectattr('is_required') | rejectattr('is_primary_key') | list %}
+    _required_columns: ClassVar[list[str]] = [{% for field in model.fields if not field.is_primary_key and field.is_required %}"{{ field.name }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+{%  endif %}
+
+{%  for field in model.fields if field.is_primary_key %}
+{%    if loop.first %}
+    # Primary key columns:
+{%    endif %}
+    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.description %}, description="{{ field.description }}"{% endif %}{% if field.constraint_params %}, {{ field.constraint_params }}{% endif %})
+{%    if loop.last %}{{ n }}{%  endif %}
+{%  endfor %}
+{%  for field in model.fields if not field.is_primary_key and field.is_required %}
+{%    if loop.first %}
+    # Required columns:
+{%    endif %}
+    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.description %}, description="{{ field.description }}"{% endif %}{% if field.constraint_params %}, {{ field.constraint_params }}{% endif %})
+{%    if loop.last %}{{ n }}{% endif %}
+{%  endfor %}
+{%  for field in model.fields if not field.is_primary_key and not field.is_required %}
+{%    if loop.first %}
+    # Optional columns:
+{%    endif %}
+    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.description %}, description="{{ field.description }}"{% endif %}{% if field.constraint_params %}, {{ field.constraint_params }}{% endif %})
+{%    if loop.last %}{{ n }}{% endif %}
+{%  endfor %}
+{%  if model.relationships %}
+    # Relations:
+{%    for rel in model.relationships %}
+    {{ rel.foreign_table }}: "{{ rel.related_model_class }} | None" = Field(default=None, description="Related table {{ rel.related_model_class }}. Include {{ rel.foreign_table }}(*) in query to populate.")
+{%    endfor %}
+{%  endif %}
+{% if not loop.last %}
+
+
+{% endif %}
+{% endfor %}

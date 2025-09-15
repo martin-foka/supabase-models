@@ -1,0 +1,56 @@
+[project]
+name = "supabase-models"
+version = "0.0.1"
+description = "Generate type-safe Pydantic models that simplify working with supabase-py"
+authors = [{ name = "martin-foka" }]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["supabase", "pydantic", "codegen", "database", "models", "postgresql", "sqlalchemy", "schema", "generator", "supabase-py"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Database",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "jinja2>=3.1.0",
+    "pydantic>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "inflect>=7.0.0",
+]
+
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.0",
+    "pytest>=7.0.0",
+    "pytest-mock>=3.10.0",
+    "ruff>=0.1.0",
+    "supabase>=2.0.0",
+]
+
+
+[project.scripts]
+supabase-models = "supabase_models.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/martin-foka/supabase-models"
+Repository = "https://github.com/martin-foka/supabase-models"
+Issues = "https://github.com/martin-foka/supabase-models/issues"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
