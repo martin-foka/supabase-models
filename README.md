@@ -1,11 +1,17 @@
-# supabase-models
+# Supabase Models
+
+[![Quality Check](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml/badge.svg)](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml)
+[![PyPI version](https://badge.fury.io/py/supabase-models.svg)](https://badge.fury.io/py/supabase-models)
+[![Python versions](https://img.shields.io/pypi/pyversions/supabase-models.svg)](https://pypi.org/project/supabase-models/)
+[![Downloads](https://pepy.tech/badge/supabase-models)](https://pepy.tech/project/supabase-models)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Generate type-safe Pydantic models from your Supabase database schema ready to use with [supabase-py](https://github.com/supabase/supabase-py).
 
-## Key features
+## Key Features
 - **Schema introspection**: Automatically extracts table structures, constraints, and relationships
 - **Type-safe models**: Creates Pydantic models with type hints and validation
-- **JSON serialization**: Generated models include `dump()` and `load()` methods for sending/receiving data via supabase-py
+- **JSON serialization**: Models include `dump()` and `load()` methods for sending/receiving data via supabase-py
 - **Constraint validation**: Translates database column constraints to Pydantic validators
 - **Customizable output**: Uses a built-in template by default, or modify the Jinja2 template to match your needs
 
@@ -15,7 +21,7 @@ This package is designed to work with:
 - [supabase-py](https://github.com/supabase/supabase-py) - the recommended Supabase Python client
 - PostgreSQL databases (including Supabase projects)
 
-## Installation
+## Installation & Setup
 
 ```bash
 pip install supabase-models
@@ -23,7 +29,7 @@ pip install supabase-models
 uv add supabase-models
 ```
 
-## Basic Usage
+## Quick Start Guide
 
 ### 1. Generate Models
 
@@ -37,7 +43,7 @@ supabase-models --database-url postgresql://user:password@localhost:5432/databas
 - Template: Built-in Jinja2 template
 
 > [!TIP]
-> See CLI Reference below for all available options and configuration methods
+> See [CLI Reference](#cli-reference) for all available options and configuration methods
 
 
 ### 2. Use with supabase-py
@@ -64,7 +70,7 @@ products: list[Product] = Product.load(select_response)
 
 See the section below for details on how these models are generated.
 
-## Generated Output
+## Generated Model Examples
 
 Given this database schema:
 
@@ -167,7 +173,7 @@ class Category(SupabaseBaseModel):
     name: str | None = Field(default=None, max_length=100)
 ```
 
-## Supported Features
+## Supported PostgreSQL Features
 
 | PostgreSQL Feature                 | Pydantic Output                                |
 |------------------------------------|------------------------------------------------|
@@ -223,7 +229,7 @@ Options:
 ```
 
 
-### CLI Examples
+### Usage Examples
 
 ```bash
 # Basic usage with environment variable
@@ -242,7 +248,7 @@ supabase-models --schema public --output public_models.py
 ```
 
 
-## Development
+## Development & Testing
 
 ```bash
 # Install development dependencies
