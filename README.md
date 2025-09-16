@@ -3,7 +3,6 @@
 [![Quality Check](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml/badge.svg)](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml)
 [![PyPI version](https://badge.fury.io/py/supabase-models.svg)](https://badge.fury.io/py/supabase-models)
 [![Python versions](https://img.shields.io/pypi/pyversions/supabase-models.svg)](https://pypi.org/project/supabase-models/)
-[![Downloads](https://pepy.tech/badge/supabase-models)](https://pepy.tech/project/supabase-models)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Generate type-safe Pydantic models from your Supabase database schema ready to use with [supabase-py](https://github.com/supabase/supabase-py).
