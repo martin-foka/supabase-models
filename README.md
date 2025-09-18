@@ -2,10 +2,11 @@
 
 [![Quality Check](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml/badge.svg)](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml)
 [![PyPI version](https://badge.fury.io/py/supabase-models.svg)](https://badge.fury.io/py/supabase-models)
+[![PyPI downloads](https://img.shields.io/pepy/dt/supabase-models.svg)](https://pypi.org/project/supabase-models/)
 [![Python versions](https://img.shields.io/pypi/pyversions/supabase-models.svg)](https://pypi.org/project/supabase-models/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Generate type-safe Pydantic models from your Supabase database schema ready to use with [supabase-py](https://github.com/supabase/supabase-py).
+Generate type-safe Pydantic models from your Supabase database schema, ready to be used with [supabase-py](https://github.com/supabase/supabase-py).
 
 ## Key Features
 - **Schema introspection**: Automatically extracts table structures, constraints, and relationships
@@ -33,7 +34,7 @@ uv add supabase-models
 ### 1. Generate Models
 
 ```bash
-supabase-models --database-url postgresql://user:password@localhost:5432/database
+supabase-models --database-url postgresql://user:password@host:port/db
 ```
 
 **Default behavior:**
@@ -210,7 +211,7 @@ class Category(SupabaseBaseModel):
 
 
 > [!NOTE]
-> Constraint parsing is continuously improving. Please open an issue with examples of constraints you'd like to see supported!
+> Constraint parsing is still work in progress. If something doesn't work as expected or you need other constraint types, please [open an issue](https://github.com/martin-foka/supabase-models/issues).
 
 ## CLI Reference
 
@@ -232,11 +233,11 @@ Options:
 
 ```bash
 # Basic usage with environment variable
-export DATABASE_URL="postgresql://user:pass@host:port/db"
+export DATABASE_URL="postgresql://user:password@host:port/db"
 supabase-models
 
 # Direct database URL
-supabase-models --database-url "postgresql://user:pass@host:port/db"
+supabase-models --database-url "postgresql://user:password@host:port/db"
 
 # Custom output and schema
 supabase-models --output app/models.py --schema public --verbose
