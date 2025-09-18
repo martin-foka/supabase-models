@@ -4,7 +4,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/supabase-models?label=pypi%20package)](https://pypi.org/project/supabase-models/)
 [![Python versions](https://img.shields.io/pypi/pyversions/supabase-models)](https://pypi.org/project/supabase-models/)
 [![License](https://img.shields.io/pypi/l/supabase-models)](https://pypi.org/project/supabase-models/)
-[![PyPI downloads](https://img.shields.io/pepy/dt/supabase-models?color=brightgreen)](https://pypi.org/project/supabase-models/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/supabase-models?&color=yellow)](https://pypi.org/project/supabase-models/)
 
 Generate type-safe Pydantic models from your Supabase database schema, ready to be used with [supabase-py](https://github.com/supabase/supabase-py).
 
