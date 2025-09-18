@@ -1,10 +1,10 @@
 # Supabase Models
 
 [![Quality Check](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml/badge.svg)](https://github.com/martin-foka/supabase-models/actions/workflows/quality-check.yml)
-[![PyPI version](https://badge.fury.io/py/supabase-models.svg)](https://badge.fury.io/py/supabase-models)
-[![PyPI downloads](https://img.shields.io/pepy/dt/supabase-models.svg)](https://pypi.org/project/supabase-models/)
-[![Python versions](https://img.shields.io/pypi/pyversions/supabase-models.svg)](https://pypi.org/project/supabase-models/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/supabase-models?label=pypi%20package)](https://pypi.org/project/supabase-models/)
+[![Python versions](https://img.shields.io/pypi/pyversions/supabase-models)](https://pypi.org/project/supabase-models/)
+[![License](https://img.shields.io/pypi/l/supabase-models)](https://pypi.org/project/supabase-models/)
+[![PyPI downloads](https://img.shields.io/pepy/dt/supabase-models?color=brightgreen)](https://pypi.org/project/supabase-models/)
 
 Generate type-safe Pydantic models from your Supabase database schema, ready to be used with [supabase-py](https://github.com/supabase/supabase-py).
 
