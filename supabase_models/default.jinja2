@@ -87,6 +87,7 @@ class SupabaseBaseModel(BaseModel):
 
 {% for enum_name, enum_values in enums.items() %}
 class {{ enum_name }}(str, Enum):
+    """Enum for {{ enum_name }} values."""
 {% for value in enum_values %}
     {{ value.upper() }} = "{{ value }}"
 {% endfor %}
@@ -99,46 +100,47 @@ class {{ model.class_name }}(SupabaseBaseModel):
 
     Attributes:
 {%  for field in model.fields %}
-        {{ field.name }} ({{ field.type }} | None): {% if field.is_primary_key %}Primary key column{% elif field.is_required %}Required column{% else %}Optional column{% endif %}{% if field.description %}; {{ field.description }}{% endif %}.
+        {{ field.name }} ({{ field.type }} | None): {% if field.primary_key %}Primary key column{% elif not field.nullable %}Required column{% else %}Optional column{% endif %}{% if field.primary_key %}; Auto-increment{% endif %}{% if field.unique %}; Unique{% endif %}{% if field.foreign_key %}; Foreign key to '{{ field.foreign_key.split('.')[0] }}'{% endif %}{% if field.default %}; Default: {{ field.default }}{% endif %}.
 {%  endfor %}
 {%  if model.relationships %}
 {%    for rel in model.relationships %}
-        {{ rel.foreign_table }} ({{ rel.related_model_class }} | None): Related table {{ rel.related_model_class }} (requires {{ rel.foreign_table }}(*) in query)
+        {{ rel.name }} ({{ rel.related_model }} | None): Related table {{ rel.related_model }} (requires {{ rel.name }}(*) in query).
 {%    endfor %}
 {%  endif %}
     """
     table_name: ClassVar[str] = "{{ model.table_name }}"
-{%  if model.fields | selectattr('is_required') | rejectattr('is_primary_key') | list %}
-    _required_columns: ClassVar[list[str]] = [{% for field in model.fields if not field.is_primary_key and field.is_required %}"{{ field.name }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+{%  set required_fields = model.fields | selectattr('nullable', 'false') | rejectattr('primary_key') | list %}
+{%  if required_fields %}
+    _required_columns: ClassVar[list[str]] = [{% for field in required_fields %}"{{ field.name }}"{% if not loop.last %}, {% endif %}{% endfor %}]
 {%  endif %}
 
-{%  for field in model.fields if field.is_primary_key %}
+{%  for field in model.fields if field.primary_key %}
 {%    if loop.first %}
     # Primary key columns:
 {%    endif %}
-    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.description %}, description="{{ field.description }}"{% endif %}{% if field.constraint_params %}, {{ field.constraint_params }}{% endif %})
+    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.pydantic_field %}{% set pf = field.pydantic_field %}{% if pf.description %}, description="{{ pf.description }}"{% endif %}{% if pf.max_length %}, max_length={{ pf.max_length }}{% endif %}{% if pf.min_length %}, min_length={{ pf.min_length }}{% endif %}{% if pf.pattern %}, pattern=r"{{ pf.pattern }}"{% endif %}{% if pf.gt %}, gt={{ pf.gt }}{% endif %}{% if pf.ge %}, ge={{ pf.ge }}{% endif %}{% if pf.lt %}, lt={{ pf.lt }}{% endif %}{% if pf.le %}, le={{ pf.le }}{% endif %}{% else %}, description="Primary key column"{% endif %})
 {%    if loop.last %}{{ n }}{%  endif %}
 {%  endfor %}
-{%  for field in model.fields if not field.is_primary_key and field.is_required %}
+{%  for field in model.fields if not field.primary_key and not field.nullable %}
 {%    if loop.first %}
     # Required columns:
 {%    endif %}
-    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.description %}, description="{{ field.description }}"{% endif %}{% if field.constraint_params %}, {{ field.constraint_params }}{% endif %})
+    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.pydantic_field %}{% set pf = field.pydantic_field %}{% if pf.description %}, description="{{ pf.description }}"{% endif %}{% if pf.max_length %}, max_length={{ pf.max_length }}{% endif %}{% if pf.min_length %}, min_length={{ pf.min_length }}{% endif %}{% if pf.pattern %}, pattern=r"{{ pf.pattern }}"{% endif %}{% if pf.gt %}, gt={{ pf.gt }}{% endif %}{% if pf.ge %}, ge={{ pf.ge }}{% endif %}{% if pf.lt %}, lt={{ pf.lt }}{% endif %}{% if pf.le %}, le={{ pf.le }}{% endif %}{% else %}, description="Required column{% if field.foreign_key %}; Foreign key to {{ field.foreign_key }}{% endif %}"{% endif %})
 {%    if loop.last %}{{ n }}{% endif %}
 {%  endfor %}
-{%  for field in model.fields if not field.is_primary_key and not field.is_required %}
+{%  for field in model.fields if not field.primary_key and field.nullable %}
 {%    if loop.first %}
     # Optional columns:
 {%    endif %}
-    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.description %}, description="{{ field.description }}"{% endif %}{% if field.constraint_params %}, {{ field.constraint_params }}{% endif %})
+    {{ field.name }}: {{ field.type }} | None = Field(default=None{% if field.pydantic_field %}{% set pf = field.pydantic_field %}{% if pf.description %}, description="{{ pf.description }}"{% endif %}{% if pf.max_length %}, max_length={{ pf.max_length }}{% endif %}{% if pf.min_length %}, min_length={{ pf.min_length }}{% endif %}{% if pf.pattern %}, pattern=r"{{ pf.pattern }}"{% endif %}{% if pf.gt %}, gt={{ pf.gt }}{% endif %}{% if pf.ge %}, ge={{ pf.ge }}{% endif %}{% if pf.lt %}, lt={{ pf.lt }}{% endif %}{% if pf.le %}, le={{ pf.le }}{% endif %}{% else %}, description="Optional column{% if field.foreign_key %}; Foreign key to {{ field.foreign_key }}{% endif %}"{% endif %})
 {%    if loop.last %}{{ n }}{% endif %}
 {%  endfor %}
 {%  if model.relationships %}
     # Relations:
 {%    for rel in model.relationships %}
-    {{ rel.foreign_table }}: "{{ rel.related_model_class }} | None" = Field(default=None, description="Related table {{ rel.related_model_class }}. Include {{ rel.foreign_table }}(*) in query to populate.")
+    {{ rel.name }}: "{{ rel.related_model }} | None" = Field(default=None, description="Related table {{ rel.related_model }}. Include {{ rel.name }}(*) in query to populate.")
 {%    endfor %}
-{%  endif %}
+{% endif %}
 {% if not loop.last %}
 
 

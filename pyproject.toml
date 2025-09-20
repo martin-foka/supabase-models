@@ -1,6 +1,6 @@
 [project]
 name = "supabase-models"
-version = "0.0.3.dev1"
+version = "0.0.3.dev2"
 description = "Generate type-safe Pydantic models that simplify working with supabase-py"
 authors = [{ name = "martin-foka" }]
 readme = "README.md"

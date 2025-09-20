@@ -97,7 +97,7 @@ def main() -> None:
     try:
         generator = ModelGenerator(
             database_url=args.database_url,
-            output_file=args.output,
+            output_filename=args.output,
             template_name=args.template,
             schema=args.schema,
         )
