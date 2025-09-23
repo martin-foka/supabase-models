@@ -89,6 +89,16 @@ class ConstraintParser:
         if lt_match:
             field_info.lt = float(lt_match.group(1))
 
+        # BETWEEN: col BETWEEN 0 AND 100 -> ge=0, le=100
+        between_match = re.search(
+            rf"{re.escape(column.name)}\s+BETWEEN\s+([+-]?\d+(?:\.\d+)?)\s+AND\s+([+-]?\d+(?:\.\d+)?)",
+            check,
+            re.IGNORECASE,
+        )
+        if between_match:
+            field_info.ge = float(between_match.group(1))
+            field_info.le = float(between_match.group(2))
+
         # Pattern: col ~ '^pattern$' -> pattern='^pattern$'
         pattern_match = re.search(rf"{re.escape(column.name)}[^~]*~[^\']*\'([^\']+)\'", check)
         if pattern_match:

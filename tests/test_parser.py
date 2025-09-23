@@ -118,6 +118,28 @@ class TestConstraintParser:
 
         assert field_info.lt == 50.0
 
+    def test_parse_check_constraints_between(self, parser):
+        """Test parsing BETWEEN constraints: col BETWEEN 0 AND 100 -> ge=0, le=100."""
+        column = ColumnInfo(name="score", type="int", sql_type="INTEGER", nullable=False)
+        column.check_constraint = "score BETWEEN 0 AND 100"
+
+        field_info = PydanticFieldInfo()
+        parser.parse_check_constraints(column, field_info)
+
+        assert field_info.ge == 0.0
+        assert field_info.le == 100.0
+
+    def test_parse_check_constraints_between_case_insensitive(self, parser):
+        """Test parsing BETWEEN constraints with different case."""
+        column = ColumnInfo(name="rating", type="float", sql_type="NUMERIC(3,1)", nullable=False)
+        column.check_constraint = "rating between 1.0 and 5.0"
+
+        field_info = PydanticFieldInfo()
+        parser.parse_check_constraints(column, field_info)
+
+        assert field_info.ge == 1.0
+        assert field_info.le == 5.0
+
     def test_parse_check_constraints_pattern(self, parser):
         """Test parsing check constraints for regex patterns."""
         column = ColumnInfo(name="email", type="str", sql_type="VARCHAR(255)", nullable=False)

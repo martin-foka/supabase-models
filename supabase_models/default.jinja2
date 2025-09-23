@@ -35,10 +35,10 @@ class SupabaseBaseModel(BaseModel):
             return serializer(value)
         return value
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_required_columns(self):
         """Validate required columns are not None."""
-        if hasattr(self.__class__, '_required_columns'):
+        if hasattr(self.__class__, "_required_columns"):
             missing = [f for f in self._required_columns if getattr(self, f) is None]
             if missing:
                 raise ValueError(f"Required columns cannot be None: {missing}")
@@ -49,7 +49,7 @@ class SupabaseBaseModel(BaseModel):
 
         Examples:
             >>> # Insert a new product into Supabase
-            >>> supabase_client: Client = ... # noqa
+            >>> supabase_client: Client = ...  # noqa
             >>> product = Product(name="Test", price=10.99)
             >>> product_data = product.dump()
             >>> supabase_client.table(Product.table_name).insert(product_data).execute()
@@ -58,7 +58,7 @@ class SupabaseBaseModel(BaseModel):
         field_names = list(self.model_fields.keys())
         exclude_set = {f for f in field_names if f not in self.__pydantic_fields_set__}
         return self.model_dump(exclude=exclude_set if exclude_set else None)
-        #return self.model_dump(exclude_unset=True)
+        # return self.model_dump(exclude_unset=True)
 
     def __iter__(self) -> Any:
         """Enable dict(model) conversion with validation - calls dump() internally."""
@@ -70,12 +70,12 @@ class SupabaseBaseModel(BaseModel):
 
         Examples:
             >>> # Load products from Supabase response
-            >>> supabase_client: Client = ... # noqa
+            >>> supabase_client: Client = ...  # noqa
             >>> response = supabase_client.table(Product.table_name).select().execute()
             >>> products: list[Product] = Product.load(response)
         """
         # Extract data from Supabase response
-        data = getattr(response_or_data, 'data', response_or_data)
+        data = getattr(response_or_data, "data", response_or_data)
         if isinstance(data, list):
             return [cls(**record) for record in data]
         return cls(**data)
