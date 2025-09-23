@@ -881,7 +881,7 @@ wheels = [
 
 [[package]]
 name = "supabase-models"
-version = "0.0.3.dev1"
+version = "0.0.3"
 source = { editable = "." }
 dependencies = [
     { name = "inflect" },

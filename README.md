@@ -175,16 +175,12 @@ class Category(SupabaseBaseModel):
 
 ## Supported PostgreSQL Features
 
+Converts PostgreSQL schemas to Pydantic models with automatic detection of primary keys, foreign keys, NOT NULL
+constraints, defaults, and unique constraints.
+
+### Data Types
 | PostgreSQL Feature                 | Pydantic Output                                |
 |------------------------------------|------------------------------------------------|
-| **Basic Features**                 |                                                |
-| `PRIMARY KEY`                      | Field descriptions                             |
-| `FOREIGN KEY`                      | Relationship information                       |
-| `NOT NULL`                         | Required field detection                       |
-| `DEFAULT value`                    | Field descriptions                             |
-| `UNIQUE`                           | Field descriptions                             |
-| `AUTOINCREMENT`                    | Field descriptions                             |
-| **Data Types**                     |                                                |
 | `VARCHAR(n)`, `CHAR(n)`, `TEXT`    | `str` with `Field(max_length=n)`               |
 | `INTEGER`, `BIGINT`, `SMALLINT`    | `int`                                          |
 | `DECIMAL(p,s)`, `NUMERIC(p,s)`     | `Decimal \| float` with precision bounds       |
@@ -194,21 +190,33 @@ class Category(SupabaseBaseModel):
 | `TIME`, `TIMETZ`                   | `time \| str` (for timezone types)             |
 | `JSON`, `JSONB`                    | `dict[str, Any]`                               |
 | `UUID`                             | `UUID`                                         |
-| `BYTEA`                            | `bytes`                                        |
+| `ARRAY`                            | `list[Any]`                                    |
 | `SERIAL`, `BIGSERIAL`              | `int` with auto-increment                      |
 | `ENUM types`                       | `CustomEnum(str, Enum)`                        |
-| **Constraints**                    |                                                |
-| `VARCHAR(n)`                       | `Field(max_length=n)`                          |
+
+### Check Constraints
+| PostgreSQL Feature                 | Pydantic Output                                |
+|------------------------------------|------------------------------------------------|
 | `CHECK (x > 0)`                    | `Field(gt=0)`                                  |
 | `CHECK (x >= 10)`                  | `Field(ge=10)`                                 |
 | `CHECK (x <= 1000)`                | `Field(le=1000)`                               |
 | `CHECK (x < 100)`                  | `Field(lt=100)`                                |
-| `CHECK (x BETWEEN 0 AND 1000)`     | `Field(ge=0, le=1000)`                         |
+| `CHECK (x BETWEEN 0 AND 100)`      | `Field(ge=0, le=100)`                          |
 | `CHECK (char_length(x) >= 5)`      | `Field(min_length=5)`                          |
 | `CHECK (char_length(x) <= 50)`     | `Field(max_length=50)`                         |
+| `CHECK (char_length(x) > 2)`       | `Field(min_length=3)`                          |
+| `CHECK (char_length(x) < 10)`      | `Field(max_length=9)`                          |
 | `CHECK (x ~ '^.+@.+$')`            | `Field(pattern=r"^.+@.+$")`                    |
-| `CHECK (x ~* '^.+@.+$')`           | `Field(pattern=r"^.+@.+$")`                    |
 
+### Schema Features
+| PostgreSQL Feature                 | Pydantic Output                                |
+|------------------------------------|------------------------------------------------|
+| `PRIMARY KEY`                      | Field descriptions                             |
+| `FOREIGN KEY`                      | Relationship fields and descriptions           |
+| `NOT NULL`                         | Required field detection                       |
+| `DEFAULT value`                    | Field descriptions                             |
+| `UNIQUE`                           | Field descriptions                             |
+| `AUTOINCREMENT`                    | Field descriptions                             |
 
 > [!NOTE]
 > Constraint parsing is still work in progress. If something doesn't work as expected or you need other constraint types, please [open an issue](https://github.com/martin-foka/supabase-models/issues).
